@@ -1,5 +1,4 @@
 from collections import defaultdict
-from typing import Optional
 
 import spacy_udpipe
 
@@ -15,6 +14,20 @@ class DepTree:
             self.pos = token['pos']
             self.dep = token['dep']
             self.children = []
+
+        def __eq__(self, other):
+            res = (
+                self.id == other.id
+                and self.lemma == other.lemma
+                and self.pos == other.pos
+                and self.dep == other.dep
+                and len(self.children) == len(other.children)
+            )
+
+            for i in range(len(self.children)):
+                res = res and (self.children[i] == other.children[i])
+
+            return res
 
     def __init__(self, sentence: str):
         self.parsed_sentence = parse(sentence)
