@@ -1,0 +1,2 @@
+deplacy==2.0.1
+spacy_udpipe==1.0.0
