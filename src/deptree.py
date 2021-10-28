@@ -8,6 +8,9 @@ parse = spacy_udpipe.load('ru')
 
 
 class DepTree:
+    class Error(Exception):
+        pass
+
     class Node:
         def __init__(self, token: dict):
             self.id = token['id']
@@ -15,7 +18,6 @@ class DepTree:
             self.pos = token['pos']
             self.dep = token['dep']
             self.children = []
-            self.height = 0
 
         def __eq__(self, other):
             res = (
@@ -38,6 +40,9 @@ class DepTree:
             )
 
     def __init__(self, sentence: str):
+        if not sentence:
+            raise self.Error('Sentence is empty')
+
         self.parsed_sentence = parse(sentence)
         self.tree = self._build_tree()
 
@@ -63,7 +68,6 @@ def build_tree_from_map(root: DepTree.Node, tree_map: dict) -> DepTree.Node:
             build_tree_from_map(child, tree_map)
             for child in tree_map[root.id]
         ]
-        root.height += max([x.height for x in root.children])
     return root
 
 
