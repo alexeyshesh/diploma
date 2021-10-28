@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import List
 
 import spacy_udpipe
 
@@ -14,6 +15,7 @@ class DepTree:
             self.pos = token['pos']
             self.dep = token['dep']
             self.children = []
+            self.height = 0
 
         def __eq__(self, other):
             res = (
@@ -29,9 +31,18 @@ class DepTree:
 
             return res
 
+        def __str__(self):
+            return f'{self.dep}' + (
+                '' if len(self.children) == 0
+                else f'({" ".join([f"{str(child)}" for child in self.children])})'
+            )
+
     def __init__(self, sentence: str):
         self.parsed_sentence = parse(sentence)
         self.tree = self._build_tree()
+
+    def __str__(self):
+        return str(self.tree)
 
     def _build_tree(self) -> Node:
         tokens = self.parsed_sentence.to_json()['tokens']
@@ -45,14 +56,6 @@ class DepTree:
 
         return build_tree_from_map(root, tree_map)
 
-    def __str__(self):
-        def node_to_str(node, depth=0) -> str:
-            return (
-                f'{"  " * depth}{node.dep}[{node.lemma}]\n'
-                + ''.join([node_to_str(child, depth+1) for child in node.children])
-            )
-        return node_to_str(self.tree)
-
 
 def build_tree_from_map(root: DepTree.Node, tree_map: dict) -> DepTree.Node:
     if tree_map[root.id]:
@@ -60,8 +63,35 @@ def build_tree_from_map(root: DepTree.Node, tree_map: dict) -> DepTree.Node:
             build_tree_from_map(child, tree_map)
             for child in tree_map[root.id]
         ]
+        root.height += max([x.height for x in root.children])
     return root
 
 
-def deptree_similarity(one: DepTree, another: DepTree) -> float:
-    pass
+def deptree_similarity(one: DepTree, other: DepTree) -> float:
+    return node_similarity(one.tree, other.tree)
+
+
+def node_similarity(one: DepTree.Node, other: DepTree.Node) -> float:
+    if one.dep == other.dep:
+        return (1 + _node_children_similarity(one.children, other.children)) / 2
+    else:
+        return 0
+
+
+def _node_children_similarity(one: List[DepTree.Node], other: List[DepTree.Node]) -> float:
+    if len(one) * len(other) == 0:
+        if len(one) == len(other):
+            return 1
+        return 0
+
+    if len(one) == len(other):
+        size = len(one)
+        return sum([node_similarity(one[i], other[i]) for i in range(size)]) / size
+    else:
+        if len(one) > len(other):
+            one, other = other, one
+        size = len(one)
+        return max([
+            _node_children_similarity(one, other[i:size+i])
+            for i in range(size)
+        ])
