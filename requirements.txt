@@ -1,2 +1,7 @@
 deplacy==2.0.1
 spacy_udpipe==1.0.0
+nltk~=3.6.5
+tqdm~=4.62.3
+sklearn~=0.0
+scikit-learn~=1.0.1
+scipy~=1.7.3

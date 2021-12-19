@@ -162,6 +162,11 @@ def build_high_level_structure(sentence):
     return _build_high_level_structure(tokens)['short']
 
 
+def get_sentence_hash(sentence):
+    tokens = parse(sentence).to_json()['tokens']
+    return _build_high_level_structure(tokens)['hash']
+
+
 def _build_high_level_structure(tokens):
     # поиск деепричастных оборотов
     structure = defaultdict(list)
@@ -184,7 +189,7 @@ def _build_high_level_structure(tokens):
 
             children = collect_children(structure, token['id'])
             cur_part = {
-                'type': 'pt',
+                'type': 'P',
                 'text': [token['lemma']] + [tokens[i]['lemma'] for i in children],
             }
             high_level_structure.append(cur_part)
@@ -216,7 +221,7 @@ def _build_high_level_structure(tokens):
             if cur_part['type'] is None:
                 cur_part['type'] = 't'
             if token['dep'] == 'ROOT':
-                cur_part['type'] = 'rt'
+                cur_part['type'] = 'R'
 
             cur_part['text'].append(token['lemma'])
             used.add(token['id'])
@@ -227,9 +232,31 @@ def _build_high_level_structure(tokens):
     return {
         'short': [x['type'] for x in high_level_structure],
         'detailed': high_level_structure,
+        'hash': ''.join([x['type'] for x in high_level_structure]),
     }
 
 
+def syntax_encode(sentence):
+    tokens = parse(sentence).to_json()['tokens']
+    cur_ids = set()
+    # ищем корень
+    for token in tokens:
+        if token['head'] == token['id']:
+            cur_ids.add(token['id'])
+    while cur_ids:
+        next_ids = set()
+        for token_id in cur_ids:
+            for token in tokens:
+                if token['head'] == token_id and token['head'] != token['id']:
+                    token['dep'] = tokens[token_id]['dep'] + '>' + token['dep']
+                    next_ids.add(token['id'])
+        cur_ids = next_ids
+
+    return [token['dep'] for token in tokens]
 
 
-
+def syntax_preprocessor(text):
+    res = []
+    for sent in sent_tokenize(text):
+        res += syntax_encode(sent)
+    return ' '.join(res)

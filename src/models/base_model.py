@@ -1,17 +1,22 @@
-from sklearn.metrics import classification_report
+import abc
+
 from tqdm import tqdm
+from sklearn.metrics import classification_report
 
-from src.model import AAModel
-from src.ds import Dataset
+from src.datasets.base_dataset import BaseDataset
 
 
-class Attributor:
+class BaseModel(abc.ABC):
+    @abc.abstractmethod
+    def train(self, dataset: BaseDataset):
+        raise NotImplementedError
 
-    def __init__(self, model: AAModel):
-        self.model = model
+    @abc.abstractmethod
+    def predict_one(self, text: str) -> str:
+        raise NotImplementedError
 
     @staticmethod
-    def get_confusion_matrix(dataset: Dataset):
+    def get_confusion_matrix(dataset: BaseDataset):
         matrix = {}
         for a1 in dataset.authors:
             matrix[a1] = {}
@@ -49,13 +54,13 @@ class Attributor:
                 )
             print('')
 
-    def evaluate(self, test_dataset: Dataset, as_dict: bool = False) -> dict or None:
+    def evaluate(self, test_dataset: BaseDataset, as_dict: bool = False) -> dict or None:
         correct, wrong = 0, 0
         correct_answers, predictions = [], []
         confusion_matrix = self.get_confusion_matrix(test_dataset)
         tqdm_dataset = tqdm(test_dataset)
         for record in tqdm_dataset:
-            prediction = self.model.predict(record.text)
+            prediction = self.predict_one(record.text)
             if prediction == record.author:
                 correct += 1
             else:
