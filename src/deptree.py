@@ -1,5 +1,4 @@
 from collections import defaultdict
-from functools import reduce
 from typing import List
 from tqdm import tqdm
 
