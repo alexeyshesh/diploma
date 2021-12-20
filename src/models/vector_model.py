@@ -18,9 +18,9 @@ class SKVectorModel(SKLearnModel):
     def get_x_train(self, dataset: BaseDataset):
         corpus = []
         for doc in dataset:
-            if doc.text not in self.__preprocess_cash:
-                self.__preprocess_cash[doc.text] = self.preprocess(doc.text)
-            corpus.append(self.__preprocess_cash[doc.text])
+            if doc.text not in self.__preprocess_cash[self.preprocess]:
+                self.__preprocess_cash[self.preprocess][doc.text] = self.preprocess(doc.text)
+            corpus.append(self.__preprocess_cash[self.preprocess][doc.text])
 
         return self.vectorizer.fit_transform(corpus)
 
