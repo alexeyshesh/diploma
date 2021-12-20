@@ -1,7 +1,10 @@
 import csv
 from typing import List
+import sys
 
 from src.datasets.base_dataset import BaseDataset
+
+csv.field_size_limit(sys.maxsize)
 
 
 class CSVDataset(BaseDataset):

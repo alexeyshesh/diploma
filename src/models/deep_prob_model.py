@@ -12,7 +12,7 @@ from src.utils import get_by_ngrams, max_key, get_pairs
 class DeepProbModel(BaseModel):
 
     def __init__(self):
-        self.keys = {'^', 't', 'rt', 'p', 'pt', '$'}
+        self.keys = {'^', 't', 'R', 'p', 'P', '$'}
         self.dataset: BaseDataset or None = None
         self.matrix = None
 
