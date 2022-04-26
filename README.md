@@ -13,3 +13,4 @@
 - `sklearn`
 - `pandas`
 - `PyQt5`
+- `udpipe`
